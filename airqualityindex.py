@@ -1,3 +1,6 @@
+import requests
+
+
 def cal_linear(iaqi_lo, iaqi_hi, bp_lo, bp_hi, cp):
     """
     范围缩放
@@ -39,17 +42,26 @@ def cal_aqi(param_list):
     return max(iaqi_list)
 
 
+def get_html_text(url):
+    r = requests.get(url, timeout=30)
+    print(r.status_code)
+    return r.text
+
+
 def main():
-    print("输入以下信息， 用空格分隔")
-    input_str = input('(1)PM2.5 (2)CO:')
-    str_list = input_str.split(' ')
-    pm_val = float(str_list[0])
-    co_val = float(str_list[1])
-    param_list = []
-    param_list.append(pm_val)
-    param_list.append(co_val)
-    aqi = cal_aqi(param_list)
-    print('空气质量指数为:{}'.format(aqi))
+    city_pinyin = input("请输入城市拼音：")
+    url = "http://pm25.in/" + city_pinyin
+    url_text = get_html_text(url)
+    print(url_text)
+    aqi_div = '''<div class="span12 data">
+        <div class="span1">
+          <div class="value">
+            '''
+    index = url_text.find(aqi_div)
+    begin_index = index + len(aqi_div)
+    end_index = url_text.find("</div>", begin_index)
+    aqi_val = url_text[begin_index: end_index]
+    print("空气质量为：{}".format(aqi_val))
 
 
 if __name__ == '__main__':
