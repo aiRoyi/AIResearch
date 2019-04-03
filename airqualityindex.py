@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import csv
 
 
 def get_html_text(url):
@@ -29,15 +30,23 @@ def get_city_aqi(city_pinyin):
         div_content = div_list[i]
         caption = div_content.find('div', {'class': 'caption'}).text.strip()
         value = div_content.find('div', {'class': 'value'}).text.strip()
-        city_aqi.append((caption, value))
+        city_aqi.append(value)
     return city_aqi
 
 
 def main():
     city_list = get_all_cities()
-    for city in city_list:
-        city_aqi = get_city_aqi(city[1])
-        print("{}的空气质量为：{}".format(city[0], city_aqi))
+    header = ['City', 'AQI','PM2.5/1h', 'PM10/1h', 'CO/1h', 'NO2/1h', 'O3/1h', 'O3/8h', 'SO2/1h']
+    with open('china_city_aqi.csv', 'w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for i, city in enumerate(city_list):
+            if (i + 1) % 10 == 0:
+                print('已处理{}条记录（共{}条记录）'.format(i + 1, len(city_list)))
+            city_name = city[0]
+            city_aqi = get_city_aqi(city[1])
+            row = [city_name] + city_aqi
+            writer.writerow(row)
 
 
 if __name__ == '__main__':
